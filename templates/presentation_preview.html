@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/preview_ppst.css') }}">
+    <title>Event and Presentation Details Preview</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const previewContainer = document.getElementById('preview-container');
+
+            // Retrieve saved form data from localStorage for both event and presentation
+            const eventDetails = JSON.parse(localStorage.getItem('presentationData'));
+            const presentationDetails = JSON.parse(localStorage.getItem('presentationDetails'));
+            const storedData = JSON.parse(localStorage.getItem('presentationFormData'));
+            const associationName = localStorage.getItem('association_name');
+            const presentationName = localStorage.getItem('presentation_name');
+
+            // Check and log the retrieved values for debugging
+            console.log('Association Name:', associationName);
+            console.log('Presentation Name:', presentationName);
+
+            if (associationName && presentationName) {
+                // Add Association Name and Presentation Name to the preview
+                const nameSection = document.createElement('div');
+                nameSection.classList.add('section');
+                nameSection.innerHTML = `
+                    <h3>Association Name:</h3>
+                    <p>${associationName || 'Not provided'}</p>
+
+                    <h3>Presentation Name:</h3>
+                    <p>${presentationName || 'Not provided'}</p>
+                `;
+                previewContainer.appendChild(nameSection);
+            } else {
+                console.log('Association Name or Presentation Name not found in localStorage');
+            }
+
+            // Event Details Section (only add if eventDetails exists)
+            if (eventDetails) {
+                const eventSection = document.createElement('div');
+                eventSection.classList.add('section');
+                eventSection.innerHTML = `
+                    <button class="edit-btn" onclick="location.href='{{ url_for('presentation_form') }}'">Edit</button>
+                    <h3>Event Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        <tr>
+                            <td>Event Description</td>
+                            <td>${eventDetails.event_description || 'Not provided'}</td>
+                        </tr>
+                        <tr>
+                            <td>Topics and Theme</td>
+                            <td>${eventDetails.topics_and_theme || 'Not provided'}</td>
+                        </tr>
+                        <tr>
+                            <td>Event Rules</td>
+                            <td>${eventDetails.event_rules || 'Not provided'}</td>
+                        </tr>
+                        ${eventDetails.rounds ? eventDetails.rounds.map((round, index) => `
+                            <tr>
+                                <td>Round ${index + 1} - Time</td>
+                                <td>${round.time || 'Not provided'}</td>
+                            </tr>
+                            <tr>
+                                <td>Round ${index + 1} - Description</td>
+                                <td>${round.description || 'Not provided'}</td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="2">No rounds provided</td></tr>'}
+                    </table>
+                `;
+                previewContainer.appendChild(eventSection);
+            }
+
+            // Presentation Details Section (only add if presentationDetails exists)
+            if (presentationDetails) {
+                const presentationSection = document.createElement('div');
+                presentationSection.classList.add('section');
+                presentationSection.innerHTML = `
+                    <button class="edit-btn" onclick="location.href='{{ url_for('presentation_detail') }}'">Edit</button>
+                    <h3>Secretary Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        ${['secretary1_name', 'secretary1_roll_number', 'secretary1_mobile', 'secretary2_name', 'secretary2_roll_number', 'secretary2_mobile'].map(key => `
+                            <tr>
+                                <td>${key.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td>${presentationDetails[key] || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+
+                    <h3>Convenor Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        ${['convenor1_name', 'convenor1_roll_number', 'convenor1_mobile', 'convenor2_name', 'convenor2_roll_number', 'convenor2_mobile'].map(key => `
+                            <tr>
+                                <td>${key.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td>${presentationDetails[key] || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+
+                    <h3>Volunteer Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        ${['volunteer1_name', 'volunteer1_roll_number', 'volunteer1_mobile', 'volunteer2_name', 'volunteer2_roll_number', 'volunteer2_mobile'].map(key => `
+                            <tr>
+                                <td>${key.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td>${presentationDetails[key] || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+
+                    <h3>Faculty Advisor Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        ${['faculty_advisor_name', 'faculty_advisor_designation', 'faculty_advisor_contact'].map(key => `
+                            <tr>
+                                <td>${key.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td>${presentationDetails[key] || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+
+                    <h3>Judge Details</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        ${['judge_name', 'judge_designation', 'judge_contact'].map(key => `
+                            <tr>
+                                <td>${key.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td>${presentationDetails[key] || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+                previewContainer.appendChild(presentationSection);
+            }
+
+            // Additional Event Details Section (only add if storedData exists)
+            if (storedData) {
+                const eventDetailsSection = document.createElement('div');
+                eventDetailsSection.classList.add('section');
+                eventDetailsSection.innerHTML = `
+                    <h3>Additional Event Details:</h3>
+                    <button class="edit-btn" onclick="location.href='{{ url_for('presentation_page') }}'">Edit</button>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Details</th>
+                        </tr>
+                        <tr><td>Day</td><td>${storedData['day'] || 'N/A'}</td></tr>
+                        <tr><td>Expected No. of Participants</td><td>${storedData['expected_participants'] || 'N/A'}</td></tr>
+                        <tr><td>Team Size</td><td>${storedData['team_size_min'] || 'N/A'} - ${storedData['team_size_max'] || 'N/A'}</td></tr>
+                        <tr><td>Halls Required</td><td>${storedData['halls_required'] || 'N/A'}</td></tr>
+                        <tr><td>Reason for Halls</td><td>${storedData['hall_reason'] || 'N/A'}</td></tr>
+                        <tr><td>Preferred Halls</td><td>${storedData['preferred_halls'] || 'N/A'}</td></tr>
+                        <tr><td>Reason for Preferred Halls</td><td>${storedData['preferred_hall_reason'] || 'N/A'}</td></tr>
+                        <tr><td>Duration of the Event</td><td>${storedData['duration'] || 'N/A'}</td></tr>
+                        <tr><td>Start to End Time</td><td>${storedData['time_slot'] || 'N/A'}</td></tr>
+                        <tr><td>No of Extension Boxes</td><td>${storedData['extension_boxes'] || 'N/A'}</td></tr>
+                        <tr><td>Reason for Extension Boxes</td><td>${storedData['extension_box_reason'] || 'N/A'}</td></tr>
+                    </table>
+                `;
+                previewContainer.appendChild(eventDetailsSection);
+            }
+
+            // Handle the back button
+            document.getElementById('back-btn').addEventListener('click', () => {
+                window.location.href = './event_form'; // Adjust to your form page URL
+            });
+
+            // Handle the submit button
+            document.getElementById('submit-btn').addEventListener('click', async () => {
+                const allData = {
+                    presentationData: JSON.parse(localStorage.getItem('presentationData')),
+                    presentationDetails: JSON.parse(localStorage.getItem('presentationDetails')),
+                    presentationFormData: JSON.parse(localStorage.getItem('presentationFormData')),
+                    associationName: associationName,
+                    presentationName: presentationName
+                };
+
+                try {
+                    const response = await fetch('/submit_presentation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(allData),
+                    });
+
+                    const result = await response.json();
+                    alert(result.message || 'Event and presentation details submitted successfully!');
+                    localStorage.clear();
+                    window.location.href = './confirm2'; // Redirect to confirmation page
+
+                } catch (error) {
+                    console.error('Error submitting data:', error);
+                    alert('Failed to submit data. Please try again.');
+                }
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+    <div class="container" id="preview-container">
+        <h1>Event and Presentation Preview</h1>
+
+        <div class="buttons">
+            <button class="back-button" id="back-btn">Back</button>
+            <button class="back-button" id="submit-btn">Submit</button>
+        </div>
+    </div>
+</body>
+
+</html>
