@@ -179,6 +179,7 @@
                         <tr><td>No of Extension Boxes</td><td>${storedData['extension_boxes'] || 'N/A'}</td></tr>
                         <tr><td>Reason for Extension Boxes</td><td>${storedData['extension_box_reason'] || 'N/A'}</td></tr>
                     </table>
+                    <button class="back-button" id="submit-btn">Submit</button>
                 `;
                 previewContainer.appendChild(eventDetailsSection);
             }
@@ -226,10 +227,6 @@
     <div class="container" id="preview-container">
         <h1>Event and Presentation Preview</h1>
 
-        <div class="buttons">
-            <button class="back-button" id="back-btn">Back</button>
-            <button class="back-button" id="submit-btn">Submit</button>
-        </div>
     </div>
 </body>
 

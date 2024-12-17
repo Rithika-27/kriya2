@@ -4,6 +4,42 @@
 <head>
     <title>Edit Event Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/preview.css') }}">
+    <style>
+        *{
+            margin: 20px;
+        }
+        input,
+textarea {
+    width: 100%; /* Ensures it takes full width of the container */
+    max-width: 100%; /* Prevents overflow beyond the container */
+    height: auto; /* Adjusts height dynamically (for input) */
+    max-height: 100%; /* Ensures it doesn't overflow vertically (for textarea) */
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box; /* Includes padding and border in width/height calculation */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #333;
+    resize: none; /* Disables resize for textarea */
+    overflow: auto; /* Handles overflow gracefully */
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    background-color: #fff;
+}
+button{
+    color: aliceblue;
+    margin-left: 20px;
+}
+    </style>
     <script>
         // Function to add a new item row
         function addItemRow() {
@@ -50,10 +86,6 @@
     <form action="/save_event" method="post">
         <table>
             <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-            <tr>
                 <td><strong>Association Name</strong></td>
                 <td><input type="text" name="association_name" value="{{ event.association_name }}"></td>
             </tr>
@@ -79,15 +111,13 @@
             </tr>
 
             <!-- Display Rounds -->
-            <tr>
-                <td><strong>Rounds</strong></td>
-                <td>
+            
                     <table id="roundsTable">
                         <tr>
-                            <th>Round Name</th>
-                            <th>Round Description</th>
-                            <th>Round Rules</th>
-                            <th>Actions</th>
+                            <th><strong>Round Name</strong> </th>
+                            <th><strong>Round Description</strong></th>
+                            <th><strong>Round Rules</strong> </th>
+                            <th><strong>Actions</strong></th>
                         </tr>
                         {% for round in event.event.rounds %}
                         <tr>
@@ -99,22 +129,19 @@
                             <td><textarea
                                     name="rounds[{{ loop.index0 }}][round_rules]">{{ round.round_rules }}</textarea>
                             </td>
-                            <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+                            <td><button type="button" style="margin-left: 90px;" onclick="removeRow(this)">Remove</button></td>
                         </tr>
                         {% endfor %}
                     </table>
                     <button type="button" onclick="addRoundRow()">Add Round</button>
-                </td>
-            </tr>
+           
             <!-- Display Details -->
             <tr>
+                <br>
                 <td><strong>Details</strong></td>
                 <td>
                     <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
+                       
                         {% for key, value in event.details.items() %}
                         <tr>
                             <td>{{ key.replace('_', ' ') | title }}</td>
@@ -130,10 +157,7 @@
                 <td><strong>Form</strong></td>
                 <td>
                     <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
+                       
                         {% set dayMapping = {
                         'day_1': 'Day 1',
                         'day_2': 'Day 2',
@@ -210,11 +234,11 @@
                 <td>
                     <table id="itemsTable">
                         <tr>
-                            <th>Item Name</th>
-                            <th>Quantity</th>
-                            <th>Price per unit</th>
-                            <th>Total price</th>
-                            <th>Actions</th>
+                            <th><strong>Item Name</strong></th>
+                            <th><strong>Quantity</strong></th>
+                            <th><strong>Price per unit</strong></th>
+                            <th><strong>Total price</strong></th>
+                            <th><strong>Actions</strong></th>
                         </tr>
                         {% for item in event['items'] %}
                         <tr>
@@ -238,13 +262,14 @@
         </table>
 
         <button type="submit" class="button">Save Changes</button>
+        <a href="/event_search" style="color: orangered; font-weight: bold; margin-left: 20px; margin-top: -5px; margin-bottom: 40px;">Search Again</a>
+        {% else %}
+        <p>No data to display.</p>
+        <a href="/event_search">Back to Search</a>
+        {% endif %}
     </form>
 
-    <a href="/event_search">Search Again</a>
-    {% else %}
-    <p>No data to display.</p>
-    <a href="/event_search">Back to Search</a>
-    {% endif %}
+   
 </body>
 
 </html>

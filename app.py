@@ -1422,10 +1422,43 @@ def presentation_form():
         }
 
         # Redirect to the preview page
-        return redirect(url_for('presentation_preview'))
+        # return redirect(url_for('presentation_preview'))
+        return redirect(url_for('items_page_pp'))
 
     # Render the form template
     return render_template('presentation_form.html')
+
+@app.route('/items_pp', methods=['GET', 'POST'])
+def items_pp():
+    if 'presentation_items' not in session:
+        session['presentation_items'] = []
+
+    if request.method == 'POST':
+        # Collect item data from the form and store it in the session
+        try:
+            item_data = {
+                "sno": request.form.get("sno"),
+                "item_name": request.form.get("item_name"),
+                "quantity": int(request.form.get("quantity")),
+                "price_per_unit": float(request.form.get("price_per_unit")),
+                "total_price": int(request.form.get("quantity")) * float(request.form.get("price_per_unit"))
+            }
+
+            # Validate required fields
+            if not item_data["item_name"] or not item_data["quantity"]:
+                flash("Item name and quantity are required.")
+                return redirect(url_for('items_pp'))
+
+            # Append item to session
+            session['presentation_items'].append(item_data)
+            flash("Item added successfully!")
+            return redirect(url_for('presentation_preview'))
+        except ValueError:
+            flash("Please enter valid numeric values for quantity and price.")
+            return redirect(url_for('items_pp'))
+
+    return render_template('items.html', presentation_items=session['presentation_items'])
+
 @app.route('/presentation_preview', methods=['GET'])
 def presentation_preview():
     try:
@@ -1433,6 +1466,7 @@ def presentation_preview():
         presentation_details = session.get('presentation_details', {})
         presentation_data = session.get('presentation_form', {})
         presentation_form_data = session.get('presentation_data', {})
+        presentation_items = session.get('presentation_items', [])
         association_name=session.get('association_name')
         presentation_name=session.get('presentation_name')
     
@@ -1441,6 +1475,7 @@ def presentation_preview():
         return render_template('presentation_preview.html', 
                                presentation_details=presentation_details, 
                                presentation_data=presentation_data,
+                               presentation_items=presentation_items,
                                presentation_form_data=presentation_form_data,association_name=association_name,presentation_name=presentation_name)
     
     except Exception:
@@ -1456,6 +1491,7 @@ def submit_presentation():
         presentation_details = all_presentation_data.get('presentationDetails')
         presentation_data = all_presentation_data.get('presentationData')
         presentation_summary = all_presentation_data.get('presentationFormData')
+        presentation_items = all_presentation_data.get('presentationItems')  
         association_name = all_presentation_data.get('associationName')
         presentation_name = all_presentation_data.get('presentationName')
 
@@ -1481,6 +1517,7 @@ def submit_presentation():
             "details": presentation_details,
             "presentation": presentation_data,
             "form": presentation_summary,
+            "items": presentation_items,
             "association_name":association_name,
             "presentation_name":presentation_name
         }
