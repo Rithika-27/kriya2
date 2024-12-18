@@ -5,7 +5,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/preview_ppst.css') }}">
-    <title>Event and Presentation Details Preview</title>
+    <title>Presentation Details Preview</title>
+    <style>
+        .edit-btn {
+            float: right;
+            margin-bottom: 10px;
+        }
+        .buttons {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    width: 60%; /* Adjust the width as needed */
+    max-width: 400px; /* Optionally limit the max width */
+    z-index: 10; /* Ensure the buttons stay on top of other content */
+}
+
+.back-button, #submit-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+.back-button {
+    background-color: #4CAF50;
+}
+
+#submit-btn {
+    background-color: #008CBA;
+}
+.buttons {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    width: 60%; /* Adjust the width as needed */
+    max-width: 400px; /* Optionally limit the max width */
+    z-index: 10; /* Ensure the buttons stay on top of other content */
+}
+
+.back-button, #submit-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+.back-button {
+    background-color: #4CAF50;
+}
+
+#submit-btn {
+    background-color: #008CBA;
+}
+
+
+        .table-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const previewContainer = document.getElementById('preview-container');
@@ -13,6 +82,7 @@
             // Retrieve saved form data from localStorage for both event and presentation
             const eventDetails = JSON.parse(localStorage.getItem('presentationData'));
             const presentationDetails = JSON.parse(localStorage.getItem('presentationDetails'));
+            const presentationItems = JSON.parse(localStorage.getItem('presentationItems'));
             const storedData = JSON.parse(localStorage.getItem('presentationFormData'));
             const associationName = localStorage.getItem('association_name');
             const presentationName = localStorage.getItem('presentation_name');
@@ -179,7 +249,6 @@
                         <tr><td>No of Extension Boxes</td><td>${storedData['extension_boxes'] || 'N/A'}</td></tr>
                         <tr><td>Reason for Extension Boxes</td><td>${storedData['extension_box_reason'] || 'N/A'}</td></tr>
                     </table>
-                    <button class="back-button" id="submit-btn">Submit</button>
                 `;
                 previewContainer.appendChild(eventDetailsSection);
             }
@@ -188,6 +257,39 @@
             document.getElementById('back-btn').addEventListener('click', () => {
                 window.location.href = './event_form'; // Adjust to your form page URL
             });
+            if (presentationItems && Array.isArray(presentationItems)) {
+                const itemsSection = document.createElement('div');
+                itemsSection.classList.add('section');
+                itemsSection.innerHTML = `
+                    <h3>Presentation Items:</h3>
+                    <button class="edit-btn" onclick="location.href='{{ url_for('items_ppst') }}'">Edit</button>
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>S.NO.</th>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price per Unit</th>
+                                <th>Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${presentationItems.map(item => `
+                                <tr>
+                                    <td>${item.sno || 'N/A'}</td>
+                                    <td>${item.item_name || 'N/A'}</td>
+                                    <td>${item.quantity || 'N/A'}</td>
+                                    <td>${item.price_per_unit || 'N/A'}</td>
+                                    <td>${item.total_price || 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                previewContainer.appendChild(itemsSection);
+            } else {
+                console.log('No valid presentation items found in localStorage');
+            }
 
             // Handle the submit button
             document.getElementById('submit-btn').addEventListener('click', async () => {
@@ -195,6 +297,7 @@
                     presentationData: JSON.parse(localStorage.getItem('presentationData')),
                     presentationDetails: JSON.parse(localStorage.getItem('presentationDetails')),
                     presentationFormData: JSON.parse(localStorage.getItem('presentationFormData')),
+                    presentationItems:JSON.parse(localStorage.getItem('presentationItems')),
                     associationName: associationName,
                     presentationName: presentationName
                 };
@@ -227,6 +330,10 @@
     <div class="container" id="preview-container">
         <h1>Event and Presentation Preview</h1>
 
+        <div class="buttons">
+            <button class="back-button" id="back-btn">Back</button>
+            <button class="back-button" id="submit-btn">Submit</button>
+        </div>
     </div>
 </body>
 
