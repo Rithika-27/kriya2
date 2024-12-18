@@ -4,10 +4,45 @@
 <head>
     <title>Presentation Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/preview.css') }}">
+    <style>
+        * {
+            margin: 20px;
+        }
+
+        input,
+        textarea {
+            width: 100%; /* Ensures it takes full width of the container */
+            max-width: 100%; /* Prevents overflow beyond the container */
+            height: auto; /* Adjusts height dynamically (for input) */
+            max-height: 100%; /* Ensures it doesn't overflow vertically (for textarea) */
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box; /* Includes padding and border in width/height calculation */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            color: #333;
+            resize: none; /* Disables resize for textarea */
+            overflow: auto; /* Handles overflow gracefully */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            background-color: #fff;
+        }
+
+        button {
+            color: aliceblue;
+            margin-left: 20px;
+        }
+    </style>
     <script>
-        // Function to add a new item row
-
-
         // Function to add a new round row
         function addRoundRow() {
             const roundsTable = document.getElementById("roundsTable");
@@ -16,7 +51,6 @@
             newRow.innerHTML = `
                 <td><input type="text" name="rounds[${rowIndex}][time]" placeholder="Round Time"></td>
                 <td><textarea name="rounds[${rowIndex}][description]" placeholder="Round Description"></textarea></td>
-                
                 <td><button type="button" onclick="removeRow(this)">Remove</button></td>
             `;
         }
@@ -38,11 +72,6 @@
     {% elif presentation %}
     <form action="/save_presentation" method="POST">
         <table>
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-
             <!-- Association and Presentation Details -->
             <tr>
                 <td><strong>Association Name</strong></td>
@@ -57,16 +86,13 @@
                 <td><input type="text" name="presentation_name" value="{{ presentation.presentation_name }}"></td>
             </tr>
 
-
             <!-- Details Section -->
             <tr>
+                <br>
                 <td><strong>Details</strong></td>
                 <td>
                     <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
+                        
                         {% for key, value in presentation.details.items() %}
                         <tr>
                             <td>{{ key.replace('_', ' ') | title }}</td>
@@ -91,22 +117,18 @@
                 <td><textarea name="event_rules">{{ presentation.presentation.event_rules }}</textarea></td>
             </tr>
             <tr>
-                <td><strong>Rounds</strong></td>
+               
                 <td>
                     <table id="roundsTable">
                         <tr>
                             <th>Round Time</th>
                             <th>Round Description</th>
                             <th>Actions</th>
-
                         </tr>
                         {% for round in presentation.presentation.rounds %}
                         <tr>
                             <td><input type="text" name="rounds[{{ loop.index0 }}][time]" value="{{ round.time }}"></td>
-                            <td><textarea
-                                    name="rounds[{{ loop.index0 }}][description]">{{ round.description }}</textarea>
-                            </td>
-
+                            <td><textarea name="rounds[{{ loop.index0 }}][description]">{{ round.description }}</textarea></td>
                             <td><button type="button" onclick="removeRow(this)">Remove</button></td>
                         </tr>
                         {% endfor %}
@@ -117,34 +139,20 @@
 
             <!-- Form Details -->
             <tr>
-                <td><strong>Form</strong><br>(SLOT:Type in the same format<br> e.g., slot1, slot2,
-                    full_day)<br></br>(DAYS:Type
-                    in the
-                    same format<br>
-                    e.g., day_1, day_2, day_3, two_days)</td>
+                <td><strong>Form</strong>
                 <td>
                     <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
-
                         <!-- Specific Day Field -->
-                        {% set dayMapping = {'day_1': 'Day 1', 'day_2': 'Day 2', 'day_3': 'Day 3', 'two_days': 'Two
-                        Days'} %}
+                        {% set dayMapping = {'day_1': 'Day 1', 'day_2': 'Day 2', 'day_3': 'Day 3', 'two_days': 'Two Days'} %}
                         {% set selectedDay = dayMapping.get(presentation.form.day, 'N/A') %}
                         <tr>
                             <td>Day</td>
                             <td>
                                 <select name="form[day]">
-                                    <option value="day_1" {% if selectedDay=='Day 1' %}selected{% endif %}>Day 1
-                                    </option>
-                                    <option value="day_2" {% if selectedDay=='Day 2' %}selected{% endif %}>Day 2
-                                    </option>
-                                    <option value="day_3" {% if selectedDay=='Day 3' %}selected{% endif %}>Day 3
-                                    </option>
-                                    <option value="two_days" {% if selectedDay=='Two Days' %}selected{% endif %}>Two
-                                        Days</option>
+                                    <option value="day_1" {% if selectedDay=='Day 1' %}selected{% endif %}>Day 1</option>
+                                    <option value="day_2" {% if selectedDay=='Day 2' %}selected{% endif %}>Day 2</option>
+                                    <option value="day_3" {% if selectedDay=='Day 3' %}selected{% endif %}>Day 3</option>
+                                    <option value="two_days" {% if selectedDay=='Two Days' %}selected{% endif %}>Two Days</option>
                                 </select>
                             </td>
                         </tr>
@@ -168,7 +176,6 @@
     </form>
     {% else %}
     <p>No event found.</p>
-
     {% endif %}
 </body>
 

@@ -4,7 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/preview.css') }}">
     <title>Workshop Preview Page</title>
+    <style>
+        .edit-btn {
+            float: right;
+            margin-bottom: 10px;
+        }
+
+        .table-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+    </style>
  
     <script>
         function formatKey(key) {
@@ -294,6 +307,7 @@
 </head>
 
 <body>
+    <div class="container">
     <h1>Workshop Preview Page</h1>
     <div id="associationName"></div>
     <div id="workshopName"></div>
@@ -302,6 +316,7 @@
     <div id="workshopItems"></div>
     <div id="workshopFormData"></div>
     <button onclick="submitWorkshopData()">Submit</button>
+</div>
 </body>
 
 </html>

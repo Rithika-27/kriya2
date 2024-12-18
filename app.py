@@ -1386,12 +1386,41 @@ def presentation_page():
         # Store the collected data in the session
         session['presentation_data'] = presentation_data
 
-        # Redirect to a form preview or confirmation page
-        return redirect(url_for('presentation_form'))
+        
+        return redirect(url_for('items_ppst'))
 
     # Render the form page
     return render_template('presentation.html')
 
+@app.route('/items_ppst', methods=['GET', 'POST'])
+def items_ppst():
+    if 'presentation_items' not in session:
+        session['presentation_items'] = []
+
+    if request.method == 'POST':
+        try:
+            items_data = {
+                "sno": request.form.get("sno"),
+                "item_name": request.form.get("item_name"),
+                "quantity": int(request.form.get("quantity")),
+                "price_per_unit": float(request.form.get("price_per_unit")),
+                "total_price": int(request.form.get("quantity")) * float(request.form.get("price_per_unit"))
+            }
+
+            if not items_data["item_name"] or not items_data["quantity"]:
+                flash("Item name and quantity are required.")
+                return redirect(url_for('items_ppst'))
+
+            session['presentation_items'].append(items_data)
+            session.modified = True  # Ensure session updates are saved
+            flash("Item added successfully!")
+            return redirect(url_for('presentation_form'))
+
+        except ValueError:
+            flash("Please enter valid numeric values for quantity and price.")
+            return redirect(url_for('items_ppst'))
+
+    return render_template('items_ppst.html', presentation_items=session['presentation_items'])
 
 @app.route('/presentation_form', methods=['GET', 'POST'])
 def presentation_form():
@@ -1422,51 +1451,18 @@ def presentation_form():
         }
 
         # Redirect to the preview page
-        # return redirect(url_for('presentation_preview'))
-        return redirect(url_for('items_page_pp'))
+        return redirect(url_for('presentation_preview'))
 
     # Render the form template
     return render_template('presentation_form.html')
-
-@app.route('/items_pp', methods=['GET', 'POST'])
-def items_pp():
-    if 'presentation_items' not in session:
-        session['presentation_items'] = []
-
-    if request.method == 'POST':
-        # Collect item data from the form and store it in the session
-        try:
-            item_data = {
-                "sno": request.form.get("sno"),
-                "item_name": request.form.get("item_name"),
-                "quantity": int(request.form.get("quantity")),
-                "price_per_unit": float(request.form.get("price_per_unit")),
-                "total_price": int(request.form.get("quantity")) * float(request.form.get("price_per_unit"))
-            }
-
-            # Validate required fields
-            if not item_data["item_name"] or not item_data["quantity"]:
-                flash("Item name and quantity are required.")
-                return redirect(url_for('items_pp'))
-
-            # Append item to session
-            session['presentation_items'].append(item_data)
-            flash("Item added successfully!")
-            return redirect(url_for('presentation_preview'))
-        except ValueError:
-            flash("Please enter valid numeric values for quantity and price.")
-            return redirect(url_for('items_pp'))
-
-    return render_template('items.html', presentation_items=session['presentation_items'])
-
 @app.route('/presentation_preview', methods=['GET'])
 def presentation_preview():
     try:
         # Retrieve presentation details, presentation data, presentation items, and presentation form data from session
         presentation_details = session.get('presentation_details', {})
         presentation_data = session.get('presentation_form', {})
+        presentation_items=session.get('presentation_items', [])
         presentation_form_data = session.get('presentation_data', {})
-        presentation_items = session.get('presentation_items', [])
         association_name=session.get('association_name')
         presentation_name=session.get('presentation_name')
     
@@ -1474,8 +1470,8 @@ def presentation_preview():
         # Pass all the data to the template
         return render_template('presentation_preview.html', 
                                presentation_details=presentation_details, 
-                               presentation_data=presentation_data,
                                presentation_items=presentation_items,
+                               presentation_data=presentation_data,
                                presentation_form_data=presentation_form_data,association_name=association_name,presentation_name=presentation_name)
     
     except Exception:
@@ -1490,14 +1486,15 @@ def submit_presentation():
         print("Received Data:", all_presentation_data) # Correct method to get JSON data
         presentation_details = all_presentation_data.get('presentationDetails')
         presentation_data = all_presentation_data.get('presentationData')
+        presentation_items=all_presentation_data.get('presentationItems')
         presentation_summary = all_presentation_data.get('presentationFormData')
-        presentation_items = all_presentation_data.get('presentationItems')  
         association_name = all_presentation_data.get('associationName')
         presentation_name = all_presentation_data.get('presentationName')
 
         # Log the received data to ensure it's correct
         print("Received presentation details:", presentation_details)
         print("Received presentation data:", presentation_data)
+        print("Received presentation data:", presentation_items)
         print("Received presentation summary:", presentation_summary)
         print("Received presentation summary:", presentation_name)
         print("Received presentation summary:", association_name)
@@ -1516,8 +1513,8 @@ def submit_presentation():
             "presentation_id": presentation_id,
             "details": presentation_details,
             "presentation": presentation_data,
+            "items":presentation_items,
             "form": presentation_summary,
-            "items": presentation_items,
             "association_name":association_name,
             "presentation_name":presentation_name
         }
@@ -1533,7 +1530,6 @@ def submit_presentation():
     except Exception as e:
             print("Error during presentation submission:", str(e))
             return jsonify({"status": "error", "message": str(e)}), 500
-
 # Confirmation Page
 @app.route('/confirm2')
 def confirm_page1():

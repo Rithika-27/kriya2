@@ -85,6 +85,24 @@
             {% endfor %}
         </table>
 
+        <!-- Dynamic Items -->
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <th><strong>Item Name</strong></th>
+                        <th><strong>Quantity</strong></th>
+                    </tr>
+                    {% for item in presentation['items'] %}
+                    <tr>
+                        <td>{{ item['item_name'] }}</td>
+                        <td>{{ item['quantity'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+    </table>
         <!-- Download PDF Button -->
         <form action="/download_pdf2" method="get">
             <input type="hidden" name="presentation_id" value="{{ presentation.presentation_id }}">
