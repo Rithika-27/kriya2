@@ -4,6 +4,7 @@ from reportlab.pdfgen import canvas  # Using ReportLab for PDF generation
 from reportlab.lib.pagesizes import letter
 import os  # For managing file paths
 from PyPDF2 import PdfReader, PdfWriter
+import gridfs
 from xhtml2pdf import pisa
 import io
 from io import BytesIO
@@ -25,10 +26,11 @@ db = client["event-kriya"]
 event_collection = db["event-entries"]
 workshop_collection=db["workshop-entries"]
 presentation_collection=db["presentation-entries"]
+fs = gridfs.GridFS(db)
 
 
 USERNAME = 'admin'
-PASSWORD = 'admin'
+PASSWORD = 'admin' 
 # Main route for home
 
 
@@ -2569,7 +2571,63 @@ def download_pdf2():
 #         f.write(buffer.read())
 
 
+@app.route('/images', methods=['POST'])
+def upload_image():
+    """Upload an image."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No image file found in the body field'}), 400
+        
+        image_file = request.files['file']
+        filename = image_file.filename
+        content_type = image_file.content_type
+        
+        # Save the image to GridFS
+        image_id = fs.put(image_file, filename=filename, content_type=content_type)
+        
+        return jsonify({'message': 'Image uploaded successfully', 'image_id': str(image_id)}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+
+@app.route('/images/<image_id>', methods=['GET'])
+def get_image(image_id):
+    """Retrieve an image by ID."""
+    try:
+        image = fs.get(ObjectId(image_id))
+        response = {
+            'image_id': image_id,
+            'filename': image.filename,
+            'content_type': image.content_type
+        }
+        return jsonify(response), 200
+    except gridfs.errors.NoFile:
+        return jsonify({'error': 'Image not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/images', methods=['GET'])
+def list_images():
+    """List all images."""
+    try:
+        files = fs.list()
+        response = [{'filename': file} for file in files]
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/images/<image_id>', methods=['DELETE'])
+def delete_image(image_id):
+    """Delete an image by ID."""
+    try:
+        fs.delete(ObjectId(image_id))
+        return jsonify({'message': 'Image deleted successfully'}), 200
+    except gridfs.errors.NoFile:
+        return jsonify({'error': 'Image not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 

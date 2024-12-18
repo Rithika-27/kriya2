@@ -1,0 +1,7 @@
+Flask
+pymongo
+reportlab
+PyPDF2
+xhtml2pdf
+datetime
+werkzeug
