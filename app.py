@@ -90,7 +90,7 @@ def search_event_admin():
                 return render_template('edit_event.html', event=None, error="Event not found.")
 
         # Check if the search ID starts with "PPST" for presentation
-        elif event_id.startswith("PPST"):
+        elif event_id.startswith("PRPN"):
             # Fetch presentation data from the database
             presentation = presentation_collection.find_one({"presentation_id": event_id})
             if presentation:
@@ -332,6 +332,32 @@ def save_presentation():
         updated_presentation['form'] = {}
         for key, value in existing_presentation['form'].items():
             updated_presentation['form'][key] = presentation_data.get(f'form[{key}]', value)
+        
+        updated_items = []
+        item_index = 0
+        while True:
+            item_name = presentation_data.get(f'items[{item_index}][item_name]')
+            if item_name is None:
+                break  # Exit loop if no more items are present in the form
+
+            item_quantity = presentation_data.get(f'items[{item_index}][quantity]')
+            item_price_per_unit = presentation_data.get(f'items[{item_index}][price_per_unit]')
+
+            if item_name.strip() and item_quantity.isdigit() and item_price_per_unit.replace('.', '', 1).isdigit():
+                item_quantity = int(item_quantity)
+                item_price_per_unit = float(item_price_per_unit)
+                total_price = item_quantity * item_price_per_unit
+
+                updated_items.append({
+                    "item_name": item_name.strip(),
+                    "quantity": item_quantity,
+                    "price_per_unit": item_price_per_unit,
+                    "total_price": total_price
+                })
+            item_index += 1
+
+        # Always update items (even if the list is empty, this clears removed items)
+        updated_presentation['items'] = updated_items
 
         updated_rounds = []
         round_index = 0
@@ -1556,6 +1582,7 @@ def view_preview_pp():
         # Fetch form data for rendering in event_preview.html
         association_name = presentation_datas.get("association_name")
         presentation_name = presentation_datas.get("presentation_name")
+        items=presentation_datas.get("items",[])
 
         form_data = presentation_datas.get("details", {})
         event_data = presentation_datas.get("form", {})
@@ -1612,18 +1639,18 @@ def view_preview_pp():
         pdf_filenames_pp.append(pdf_filename_page_4)
         pdf_filepaths_pp.append(pdf_filepath_page_4)
 
-        # html_content_page_5 = render_template(
-        #     'items_preview.html',
-        #     presentation_id=presentation_id,
-        #     items=items,
-        #     presentation_datas=presentation_datas
-        # )
-        # pdf_output_page_5 = generate_pdf(html_content_page_5)
-        # pdf_filename_page_5 = generate_unique_filename("presentation_page5")
-        # pdf_filepath_page_5 = os.path.join('static', 'uploads', pdf_filename_page_5)
-        # save_pdf(pdf_output_page_5, pdf_filepath_page_5)
-        # pdf_filenames_pp.append(pdf_filename_page_5)
-        # pdf_filepaths_pp.append(pdf_filepath_page_5)
+        html_content_page_5 = render_template(
+            'items_preview.html',
+            presentation_id=presentation_id,
+            items=items,
+            presentation_datas=presentation_datas
+        )
+        pdf_output_page_5 = generate_pdf(html_content_page_5)
+        pdf_filename_page_5 = generate_unique_filename("presentation_page5")
+        pdf_filepath_page_5 = os.path.join('static', 'uploads', pdf_filename_page_5)
+        save_pdf(pdf_output_page_5, pdf_filepath_page_5)
+        pdf_filenames_pp.append(pdf_filename_page_5)
+        pdf_filepaths_pp.append(pdf_filepath_page_5)
 
         html_content_page_6 = render_template(
             'presentation_last.html',
@@ -2120,7 +2147,7 @@ def download_pdf2():
 
         form_data = presentation_datas.get("details", {})
         event_data = presentation_datas.get("form", {})
-       
+        items=presentation_datas.get("items",[])
         presentation_rounds = presentation_datas.get("presentation", {})
 
         # Generate and save multiple pages as PDFs
@@ -2173,18 +2200,18 @@ def download_pdf2():
         pdf_filenames_pp.append(pdf_filename_page_4)
         pdf_filepaths_pp.append(pdf_filepath_page_4)
 
-        # html_content_page_5 = render_template(
-        #     'items_preview.html',
-        #     presentation_id=presentation_id,
-        #     items=items,
-        #     presentation_datas=presentation_datas
-        # )
-        # pdf_output_page_5 = generate_pdf(html_content_page_5)
-        # pdf_filename_page_5 = generate_unique_filename("presentation_page5")
-        # pdf_filepath_page_5 = os.path.join('static', 'uploads', pdf_filename_page_5)
-        # save_pdf(pdf_output_page_5, pdf_filepath_page_5)
-        # pdf_filenames_pp.append(pdf_filename_page_5)
-        # pdf_filepaths_pp.append(pdf_filepath_page_5)
+        html_content_page_5 = render_template(
+            'items_preview.html',
+            presentation_id=presentation_id,
+            items=items,
+            presentation_datas=presentation_datas
+        )
+        pdf_output_page_5 = generate_pdf(html_content_page_5)
+        pdf_filename_page_5 = generate_unique_filename("presentation_page5")
+        pdf_filepath_page_5 = os.path.join('static', 'uploads', pdf_filename_page_5)
+        save_pdf(pdf_output_page_5, pdf_filepath_page_5)
+        pdf_filenames_pp.append(pdf_filename_page_5)
+        pdf_filepaths_pp.append(pdf_filepath_page_5)
 
         html_content_page_6 = render_template(
             'presentation_last.html',
@@ -2202,7 +2229,7 @@ def download_pdf2():
 
 
         # Merge the PDFs
-        merged_pdf_filename = f"{presentation_id}_combined.pdf"
+        merged_pdf_filename = f"{presentation_id}.pdf"
         merged_pdf_filepath = os.path.join('static', 'uploads', merged_pdf_filename)
 
         # Use PdfMerger to combine PDFs
